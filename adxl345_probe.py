@@ -57,7 +57,9 @@ class ADXL345Probe:
         self.printer.register_event_handler('klippy:mcu_identify', self.handle_mcu_identify)
         self.cmd_helper = probe.ProbeCommandHelper(config, self, self.query_endstop)
         self.probe_offsets = probe.ProbeOffsetsHelper(config)
-        self.probe_session = probe.ProbeSessionHelper(config, self)
+        self.param_helper = probe.ProbeParameterHelper(config)
+        self.homing_helper = probe.HomingViaProbeHelper(config, self, self.param_helper)
+        self.probe_session = probe.ProbeSessionHelper(config, self.param_helper, self.homing_helper.start_probe_session)
         self.printer.add_object('probe', self)
 
     def init_adxl(self):
@@ -103,7 +105,7 @@ class ADXL345Probe:
         return self.position_endstop
 
     def get_probe_params(self, gcmd=None):
-        return self.probe_session.get_probe_params(gcmd)
+        return self.param_helper.get_probe_params(gcmd)
 
     def get_offsets(self):
         return self.probe_offsets.get_offsets()
